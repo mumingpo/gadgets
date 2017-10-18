@@ -12,6 +12,10 @@ def main():
         path1 = sys.argv[1]
         path2 = sys.argv[2]
         path3 = sys.argv[3]
+    if len(sys.argv) == 5:
+      bla = float(sys.argv[4])
+    else:
+      bla = 0.333333
     p1_ = img.open(path1).convert("L")
     p2 = img.open(path2).convert("L")
     #resize p1 to match size of p2
@@ -29,15 +33,14 @@ def main():
         hstart = (p2.size[0]-p1_.size[0])//2
         p1array[:,hstart:hstart+p1_.size[0]] = np.array(p1_)
     p1 = img.fromarray(p1array, "L")
-    v, a = map(img.fromarray, GetVAPair(np.array(p1), np.array(p2)))
-    p = img.merge("RGBA", [v,v,v,a])
+    v, a = map(img.fromarray, GetVAPair(np.array(p1), np.array(p2), bla))
+    p = img.merge("RGBA", [v,v,v,a]).convert("P")
     p.save(path3)
 
-def GetVAPair(p1:np.ndarray, p2:np.ndarray, bla = 0.5):    # back light alpha is the maximum brightness for the hidden image and minimum brightness for the dominant image
+def GetVAPair(p1:np.ndarray, p2:np.ndarray, bla = 0.333333):    # back light alpha is the maximum brightness for the hidden image and minimum brightness for the dominant image
     vaproduct = bla * p2 / 255
     alpha = vaproduct + (1 - p1 / 255) * (1 - bla)
     value = np.divide(vaproduct, alpha, out=np.zeros_like(vaproduct), where=alpha!=0)
-    print(alpha.max(), value.max())
     return (value*255).astype(np.uint8), (alpha*255).astype(np.uint8)
 
 if __name__ == "__main__":
